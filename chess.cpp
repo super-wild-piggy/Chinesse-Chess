@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <graphics.h>
 #include <conio.h>
+#include <time.h>
 
 #define ROW 10
 #define COL 9     
@@ -30,18 +31,51 @@ struct Chess {
     bool isRiver;//是否过河
 };
 
+
+
 //游戏地图
 struct Chess map[ROW][COL];
 
-struct State {
+//游戏结束标志
+bool ifrun;
+
+
+//计时器属性
+struct timeclock {
+    time_t current_time;
+    time_t start_time;
+    int total;
+    int stepTotal;
+    bool ifrunning;
+};
+struct timeclock black, red;
+
+
+char redTotal[10];
+char redStepTotal[10];
+char blackTotal[10];
+char blackStepTotal[10];
+
+//计时转化为输出的字符串
+char* totaltime(int time,char* output) {
+    int min = time / 60;
+    int sec = time % 60;
+    sprintf_s(output,10, "%02d:%02d", min, sec);
+    return output;
+}
+
+struct State {//每一步的状态，用来判断是否合法和计算时间
     int begr;
     int begc;
     int endr;
     int endc;
     int state;
-}state={-1,-1,-1,-1,BEGIN};
+    int color;
+}state={-1,-1,-1,-1,BEGIN,RED};
 
 void chessMove();
+void chessTime();
+
 //初始化数据
 void init() {
     for (size_t i = 0; i < ROW; i++)
@@ -51,7 +85,7 @@ void init() {
             map[i][j].id = NONE;//初始化棋盘
             int temp = 0;//表示棋子在数组中的位置
             if (i <= 4) {//放黑色棋子
-                map[i][j].type = BLACK;
+                map[i][j].type = WHITE;
 
                 if (i == 0) {//放置第一行
                     if (j <= 4) {
@@ -61,29 +95,34 @@ void init() {
                         temp = 8 - j;
                     }
                     map[i][j].id = blackChess[temp];
+                    map[i][j].type = BLACK;
                 }
                 if (i == 2) {//放置第三行的炮
                     if (j == 1 || j == 7) {
                         map[i][j].id = blackChess[5];
+                        map[i][j].type = BLACK;
                     }
                 }
                 if (i == 3) {//放置第四行的兵
                     if (j % 2 == 0) {
                         map[i][j].id = blackChess[6];
+                        map[i][j].type = BLACK;
                     }
                 }
 
             }
             else {//放红色棋子
-                map[i][j].type = RED;
+                map[i][j].type = WHITE;
                 if (i == 6) {//放置第七行的卒
                     if (j % 2 == 0) {
                         map[i][j].id = redChess[6];
+                        map[i][j].type = RED;
                     }
                 }
                 if (i == 7) {//放置第八行的炮
                     if (j == 1 || j == 7) {
                         map[i][j].id = redChess[5];
+                        map[i][j].type = RED;
                     }
                 }
                 if (i == 9) {//放置第十行
@@ -94,6 +133,7 @@ void init() {
                         temp = 8 - j;
                     }
                     map[i][j].id = redChess[temp];
+                    map[i][j].type = RED;
                 }
             }
             map[i][j].isRiver = false;
@@ -101,6 +141,18 @@ void init() {
             map[i][j].y = INTERVAL + i * GRID_SIZE;
         }
     }
+}
+void initTime() {
+    black.stepTotal = 60;
+    black.total = 15 * 60;
+    red.stepTotal = 60;
+    red.total = 15 * 60;
+    black.ifrunning = false;
+    red.ifrunning = true;
+    totaltime(black.stepTotal, blackStepTotal);
+    totaltime(black.total, blackTotal);
+    totaltime(red.stepTotal, redStepTotal);
+    totaltime(black.total, redTotal);
 }
 
 //打印棋盘
@@ -117,11 +169,25 @@ void show() {
 
 }
 
-//绘制棋子
+//绘制
 void draw() {
+    chessTime();
     setfillcolor(RGB(252, 215, 162));
     setlinestyle(PS_SOLID, 2);
     settextstyle(30, 0, "楷体");
+    setlinecolor(BLACK);
+    settextcolor(BLACK);
+    rectangle(72, 2, 351, 49);//绘制黑方计时器
+    line(211, 2, 211, 49);
+    outtextxy(100, 13, blackTotal);
+    outtextxy(230, 13, blackStepTotal);
+    setlinecolor(RED);
+    settextcolor(RED);
+    rectangle(570, 2, 849, 49);//绘制红方计时器
+    line(709, 2, 709, 49);
+    outtextxy(740, 13, redTotal);
+    outtextxy(600, 13, redStepTotal);
+
     for (size_t i = 0; i < ROW; i++)
     {
         for (size_t j = 0; j < COL; j++)
@@ -158,22 +224,95 @@ void mouseEvent() {
             if (msg.x > map[row][col].x + GRID_SIZE / 3 && msg.y < map[row][col].y + GRID_SIZE / 3) {
                 col++;
             }
-            //printf("(%d,%d)", row, col);
+            
             if (state.state == BEGIN) {
                 state.begc = col;
                 state.begr = row;
                 state.state = END;
-            }
-            if (state.state == END) {
+            }else if (state.state == END) {
                 state.endc = col;
                 state.endr = row;
                 state.state = BEGIN;
             }
+            
+            printf("begin(%d %d)end(%d %d)", state.begr, state.begc, state.endr, state.endc);
+            chessMove();
         }
     }
 }
 
+//移动棋子
 void chessMove() {
+    if ((state.begc != state.endc || state.begr != state.endr) &&
+        state.begc != -1 && state.begr != -1 && state.endr != -1 && state.endc != -1&&
+        map[state.begr][state.begc].type!=map[state.endr][state.endc].type&&
+        map[state.begr][state.begc].id!=NONE&&map[state.begr][state.begc].type==state.color) {//基础规则判断
+        map[state.endr][state.endc].id = map[state.begr][state.begc].id;//把棋子移动到下棋位置
+        map[state.begr][state.begc].id = NONE;//最开始的位置为空
+        map[state.endr][state.endc].type= map[state.begr][state.begc].type;//把棋子移动到下棋位置
+        map[state.begr][state.begc].type = WHITE;
+        printf("移动\n");
+        state.begc = -1;
+        state.begr = -1;
+        state.endc = -1;
+        state.endr = -1;
+        if (state.color == BLACK) {
+            state.color = RED;
+            red.ifrunning = true;
+            black.ifrunning = false;
+            time(&red.start_time);
+            red.stepTotal = 60;//重置红棋步时
+        }
+        else {
+            state.color = BLACK;
+            red.ifrunning = false;
+            black.ifrunning = true;
+            time(&black.start_time);
+            black.stepTotal = 60;//重置黑棋步时
+        }
+    }
+    else if(state.begc != -1 && state.begr != -1 && state.endr != -1 && state.endc != -1){
+        printf("无法移动\n");
+        state.begc = -1;
+        state.begr = -1;
+        state.endc = -1;
+        state.endr = -1;
+    }
+}
+
+void chessTime() {
+    time(&red.current_time);
+    time(&black.current_time);
+    if (red.ifrunning) {
+        if (red.total != 0 && red.stepTotal != 0) {
+            int diff = difftime(red.current_time, red.start_time);
+            red.total -= diff;
+            red.stepTotal -= diff;
+            totaltime(red.total, redTotal);//转化字符串
+            totaltime(red.stepTotal, redStepTotal);//转化字符串
+            red.start_time = red.current_time;//重置开始时间
+        }
+        else {
+            printf("黑方胜利\n");
+            ifrun = false;
+        }
+    }
+    if (black.ifrunning) {
+        if (black.total != 0 && black.stepTotal != 0) {
+            int diff = difftime(black.current_time, black.start_time);
+            black.total -= diff;
+            black.stepTotal -= diff;
+            totaltime(black.total, blackTotal);//转化字符串
+            totaltime(black.stepTotal, blackStepTotal);//转化字符串
+            black.start_time = black.current_time;//重置开始时间
+        }
+        else {
+            printf("红方胜利\n");
+            ifrun = false;
+        }
+    }
+
+
 
 }
 
@@ -181,24 +320,27 @@ void chessMove() {
 
 int main() {
     //创建图形窗口
-    initgraph(931, 993);
+    initgraph(931, 1050);
     //设置背景模式
     setbkmode(TRANSPARENT);
+    setbkcolor(WHITE);
     //贴棋盘
     IMAGE img_board;
     loadimage(&img_board, "D:\\mew\\chess\\chessboard.jpg");
-    
+    ifrun = true;
 
     init();
+    initTime();
     show();
+    time(&red.start_time);
     //双缓冲绘图
     BeginBatchDraw();
-    while (true) {
+    while (ifrun) {
         cleardevice();
         putimage(0, 0, &img_board);
         draw();
         mouseEvent();
-
+        
         FlushBatchDraw();
     }
     
