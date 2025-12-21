@@ -333,8 +333,17 @@ void chessMove() {
                 ifmove = false;
             }
             break;
+        case 士:
+        case 仕:
+            if ((state.endr <= 2 || state.endr >= 7) && (state.endc >= 3 && state.endc <= 5) &&
+                abs(state.begc - state.endc) == 1 && abs(state.begr - state.endr) == 1) {
+            }
+            else {
+                ifmove = false;
+            }
+            break;
         }
-        
+                
         
         
         
