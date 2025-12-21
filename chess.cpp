@@ -253,15 +253,16 @@ void chessMove() {
         switch (map[state.begr][state.begc].id) {
         case 車:
         case 俥:
-            if (state.begc == state.endc&&state.begr>state.endr) {
-                for (int i = state.endr+1; i < state.begr; i++)
+            if (state.begc == state.endc && state.begr > state.endr) {
+                for (int i = state.endr + 1; i < state.begr; i++)
                 {
                     if (map[i][state.begc].id != NONE) {
                         ifmove = false;
                         break;
                     }
                 }
-            }else if (state.begc == state.endc && state.begr < state.endr) {
+            }
+            else if (state.begc == state.endc && state.begr < state.endr) {
                 for (int i = state.begr + 1; i < state.endr; i++)
                 {
                     if (map[i][state.begc].id != NONE) {
@@ -269,7 +270,8 @@ void chessMove() {
                         break;
                     }
                 }
-            }else if (state.begr ==state.endr && state.begc < state.endc) {
+            }
+            else if (state.begr == state.endr && state.begc < state.endc) {
                 for (int i = state.begc + 1; i < state.endc; i++)
                 {
                     if (map[state.begr][i].id != NONE) {
@@ -277,7 +279,8 @@ void chessMove() {
                         break;
                     }
                 }
-            }else if (state.begr == state.endr && state.begc > state.endc) {
+            }
+            else if (state.begr == state.endr && state.begc > state.endc) {
                 for (int i = state.endc + 1; i < state.begc; i++)
                 {
                     if (map[state.begr][i].id != NONE) {
@@ -285,15 +288,39 @@ void chessMove() {
                         break;
                     }
                 }
-            }else {
+            }
+            else {
                 ifmove = false;
             }
             break;
         case 馬:
         case 马:
-            if (abs(state.begc - state.endc) == 2 && abs(state.begr - state.endr) == 1) {
-                if()
-             }
+            if ((abs(state.begc - state.endc) == 2 && abs(state.begr - state.endr) == 1) || (abs(state.begc - state.endc) == 1 && abs(state.begr - state.endr) == 2)) {
+                if (state.begc - state.endc == 2) {//向左跳跃
+                    if (map[state.begr][state.endc + 1].id != NONE) {
+                        ifmove=false;
+                    }
+
+                }
+                else if (state.endc - state.begc == 2) {//向右跳跃
+                    if (map[state.begr][state.begc + 1].id != NONE) {
+                        ifmove=false;
+                    }
+                }
+                else if (state.begr - state.endr == 2) {//向后跳跃
+                    if (map[state.endr + 1][state.begc].id != NONE) {
+                        ifmove = false;
+                    }
+                }
+                else if (state.endr - state.begr == 2) {//向前跳跃
+                    if (map[state.begr + 1][state.begc].id != NONE) {
+                        ifmove = false;
+                    }
+                }
+            }else{
+                ifmove = false;
+            }
+            break;
         }
         
         
