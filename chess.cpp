@@ -73,10 +73,13 @@ struct State {//每一步的状态，用来判断是否合法和计算时间
     int endc;
     int state;
     int color;
-}state={-1,-1,-1,-1,BEGIN,RED};
+    int redGeneral;//记录红将军的位置
+    int blackGeneral;//记录黑将军的位置
+}state={-1,-1,-1,-1,BEGIN,RED,4,4};
 
 void chessMove();
 void chessTime();
+void ifface();
 
 //初始化数据
 void init() {
@@ -342,6 +345,21 @@ void chessMove() {
                 ifmove = false;
             }
             break;
+        case 帥:
+        case 将:
+            if ((state.endr <= 2 || state.endr >= 7) && (state.endc >= 3 && state.endc <= 5) &&
+                ((abs(state.begc - state.endc) == 1 && state.begr == state.endr)) || (abs(state.begr - state.endr) == 1 && state.begc == state.endc)) {
+                   if (state.color = RED) {
+                        state.redGeneral = state.endc;
+                   }
+                   else {
+                        state.blackGeneral = state.endc;
+                   }
+            }
+            else {
+                ifmove = false;
+            }
+            break;
         }
                 
         
@@ -353,6 +371,7 @@ void chessMove() {
             map[state.endr][state.endc].type = map[state.begr][state.begc].type;//把棋子移动到下棋位置
             map[state.begr][state.begc].type = WHITE;
             printf("移动\n");
+            ifface();
             state.begc = -1;
             state.begr = -1;
             state.endc = -1;
@@ -426,6 +445,39 @@ void chessTime() {
 }
 
 
+//判断将帅是否碰面
+void ifface() {
+    if (state.color == BLACK && state.blackGeneral == state.redGeneral) {
+        bool ifface = true;
+        for (size_t i = 1; i < 9; i++)
+        {
+            if (map[i][state.blackGeneral].id != NONE) {
+                ifface = false;
+                break;
+            }
+        }
+        if (ifface) {
+            ifrun = false;
+            printf("红方获胜\n");
+        }
+    }
+    else if (state.color == RED && state.redGeneral == state.blackGeneral) {
+        bool ifface = true;
+        for (size_t i = 1; i < 9; i++)
+        {
+            if (map[i][state.blackGeneral].id != NONE) {
+                ifface = false;
+                break;
+            }
+        }
+        if (ifface) {
+            ifrun = false;
+            printf("黑方获胜\n");
+        }
+    }
+
+}
+
 
 int main() {
     //创建图形窗口
@@ -452,6 +504,7 @@ int main() {
         
         FlushBatchDraw();
     }
+    
     
     EndBatchDraw();
     
