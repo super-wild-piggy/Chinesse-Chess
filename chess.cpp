@@ -321,7 +321,20 @@ void chessMove() {
                 ifmove = false;
             }
             break;
+        case 象:
+        case 相:
+            if ((map[state.begr][state.begc].type == RED && state.endr >= 5) || (map[state.begr][state.begc].type == BLACK && state.endr <= 4)
+                &&abs(state.begc-state.endc)==2&&abs(state.begr-state.endr)==2) {
+                if (map[(state.begr + state.endr) / 2][(state.begc + state.endc) / 2].id != NONE) {
+                    ifmove = false;
+                }
+            }
+            else {
+                ifmove = false;
+            }
+            break;
         }
+        
         
         
         
