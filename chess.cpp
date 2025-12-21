@@ -3,13 +3,15 @@
 #include <graphics.h>
 #include <conio.h>
 #include <time.h>
+#include <math.h>
 
 #define ROW 10
 #define COL 9     
 #define GRID_SIZE 93
 #define INTERVAL 95
 
-enum Pieces {//枚举所有的棋子
+//枚举所有的棋子
+enum Pieces {
     NONE = -1,
     車, 馬, 象, 士, 将, 砲, 卒,
     俥, 马, 相, 仕, 帥, 炮, 兵,
@@ -247,28 +249,86 @@ void chessMove() {
         state.begc != -1 && state.begr != -1 && state.endr != -1 && state.endc != -1&&
         map[state.begr][state.begc].type!=map[state.endr][state.endc].type&&
         map[state.begr][state.begc].id!=NONE&&map[state.begr][state.begc].type==state.color) {//基础规则判断
-        map[state.endr][state.endc].id = map[state.begr][state.begc].id;//把棋子移动到下棋位置
-        map[state.begr][state.begc].id = NONE;//最开始的位置为空
-        map[state.endr][state.endc].type= map[state.begr][state.begc].type;//把棋子移动到下棋位置
-        map[state.begr][state.begc].type = WHITE;
-        printf("移动\n");
-        state.begc = -1;
-        state.begr = -1;
-        state.endc = -1;
-        state.endr = -1;
-        if (state.color == BLACK) {
-            state.color = RED;
-            red.ifrunning = true;
-            black.ifrunning = false;
-            time(&red.start_time);
-            red.stepTotal = 60;//重置红棋步时
+        bool ifmove = true;
+        switch (map[state.begr][state.begc].id) {
+        case 車:
+        case 俥:
+            if (state.begc == state.endc&&state.begr>state.endr) {
+                for (int i = state.endr+1; i < state.begr; i++)
+                {
+                    if (map[i][state.begc].id != NONE) {
+                        ifmove = false;
+                        break;
+                    }
+                }
+            }else if (state.begc == state.endc && state.begr < state.endr) {
+                for (int i = state.begr + 1; i < state.endr; i++)
+                {
+                    if (map[i][state.begc].id != NONE) {
+                        ifmove = false;
+                        break;
+                    }
+                }
+            }else if (state.begr ==state.endr && state.begc < state.endc) {
+                for (int i = state.begc + 1; i < state.endc; i++)
+                {
+                    if (map[state.begr][i].id != NONE) {
+                        ifmove = false;
+                        break;
+                    }
+                }
+            }else if (state.begr == state.endr && state.begc > state.endc) {
+                for (int i = state.endc + 1; i < state.begc; i++)
+                {
+                    if (map[state.begr][i].id != NONE) {
+                        ifmove = false;
+                        break;
+                    }
+                }
+            }else {
+                ifmove = false;
+            }
+            break;
+        case 馬:
+        case 马:
+            if (abs(state.begc - state.endc) == 2 && abs(state.begr - state.endr) == 1) {
+                if()
+             }
+        }
+        
+        
+        
+        if (ifmove) {
+            map[state.endr][state.endc].id = map[state.begr][state.begc].id;//把棋子移动到下棋位置
+            map[state.begr][state.begc].id = NONE;//最开始的位置为空
+            map[state.endr][state.endc].type = map[state.begr][state.begc].type;//把棋子移动到下棋位置
+            map[state.begr][state.begc].type = WHITE;
+            printf("移动\n");
+            state.begc = -1;
+            state.begr = -1;
+            state.endc = -1;
+            state.endr = -1;
+            if (state.color == BLACK) {
+                state.color = RED;
+                red.ifrunning = true;
+                black.ifrunning = false;
+                time(&red.start_time);
+                red.stepTotal = 60;//重置红棋步时
+            }
+            else {
+                state.color = BLACK;
+                red.ifrunning = false;
+                black.ifrunning = true;
+                time(&black.start_time);
+                black.stepTotal = 60;//重置黑棋步时
+            }
         }
         else {
-            state.color = BLACK;
-            red.ifrunning = false;
-            black.ifrunning = true;
-            time(&black.start_time);
-            black.stepTotal = 60;//重置黑棋步时
+            printf("无法移动\n");
+            state.begc = -1;
+            state.begr = -1;
+            state.endc = -1;
+            state.endr = -1;
         }
     }
     else if(state.begc != -1 && state.begr != -1 && state.endr != -1 && state.endc != -1){
@@ -326,7 +386,7 @@ int main() {
     setbkcolor(WHITE);
     //贴棋盘
     IMAGE img_board;
-    loadimage(&img_board, "D:\\mew\\chess\\chessboard.jpg");
+    loadimage(&img_board, "chessboard.jpg");
     ifrun = true;
 
     init();
