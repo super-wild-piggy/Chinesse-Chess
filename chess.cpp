@@ -360,7 +360,109 @@ void chessMove() {
                 ifmove = false;
             }
             break;
+        case 炮:
+        case 砲:
+            if (map[state.endr][state.endc].id == NONE) {
+                if (state.begc == state.endc && state.begr > state.endr) {
+                    for (int i = state.endr + 1; i < state.begr; i++)
+                    {
+                        if (map[i][state.begc].id != NONE) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else if (state.begc == state.endc && state.begr < state.endr) {
+                    for (int i = state.begr + 1; i < state.endr; i++)
+                    {
+                        if (map[i][state.begc].id != NONE) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else if (state.begr == state.endr && state.begc < state.endc) {
+                    for (int i = state.begc + 1; i < state.endc; i++)
+                    {
+                        if (map[state.begr][i].id != NONE) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else if (state.begr == state.endr && state.begc > state.endc) {
+                    for (int i = state.endc + 1; i < state.begc; i++)
+                    {
+                        if (map[state.begr][i].id != NONE) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    ifmove = false;
+                }
+            }
+            else {
+                int count = 0;
+                if (state.begc == state.endc && state.begr > state.endr) {
+                    for (int i = state.endr + 1; i < state.begr; i++)
+                    {
+                        if (map[i][state.begc].id != NONE) {
+                            count++;
+                        }
+                        if (count > 1) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else if (state.begc == state.endc && state.begr < state.endr) {
+                    for (int i = state.begr + 1; i < state.endr; i++)
+                    {
+                        if (map[i][state.begc].id != NONE) {
+                            count++;
+                        }
+                        if (count > 1) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else if (state.begr == state.endr && state.begc < state.endc) {
+                    for (int i = state.begc + 1; i < state.endc; i++)
+                    {
+                        if (map[state.begr][i].id != NONE) {
+                            count++;
+                        }
+                        if (count > 1) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else if (state.begr == state.endr && state.begc > state.endc) {
+                    for (int i = state.endc + 1; i < state.begc; i++)
+                    {
+                        if (map[state.begr][i].id != NONE) {
+                            count++;
+                        }
+                        if (count > 1) {
+                            ifmove = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    ifmove = false;
+                }
+                if (count == 0) {
+                    ifmove = false;
+                }
+            }
+            break;
         }
+        
                 
         
         
@@ -407,7 +509,7 @@ void chessMove() {
         state.endr = -1;
     }
 }
-
+//计时函数
 void chessTime() {
     time(&red.current_time);
     time(&black.current_time);
@@ -507,6 +609,9 @@ int main() {
     
     
     EndBatchDraw();
+    cleardevice();
+    putimage(0, 0, &img_board);
+    draw();
     
   
     getchar();
