@@ -461,6 +461,36 @@ void chessMove() {
                 }
             }
             break;
+        case 兵:
+            if (state.begr <= 4) {
+                if (!(state.endr == state.begr+1&&state.begc==state.endc)) {
+                    ifmove = false;
+                }
+            }
+            else {
+                if ((state.endr == state.begr + 1&&state.endc==state.begc) || 
+                    (abs(state.begc - state.endc) == 1&&state.begr==state.endr)) {
+                }
+                else {
+                    ifmove = false;
+                }
+            }
+            break;
+        case 卒:
+            if (state.begr >= 5) {
+                if (!(state.endr == state.begr - 1 && state.begc == state.endc)) {
+                    ifmove = false;
+                }
+            }
+            else {
+                if ((state.endr == state.begr - 1 && state.endc == state.begc) ||
+                    (abs(state.begc - state.endc) == 1 && state.begr == state.endr)) {
+                }
+                else {
+                    ifmove = false;
+                }
+            }
+            break;
         }
         
                 
@@ -468,6 +498,14 @@ void chessMove() {
         
         
         if (ifmove) {
+            if (map[state.endr][state.endc].id == 帥 ) {
+                ifrun = false;
+                printf("红方获胜\n");
+            }
+            else if (map[state.endr][state.endc].id == 将) {
+                ifrun = false;
+                printf("黑方获胜\n");
+            }
             map[state.endr][state.endc].id = map[state.begr][state.begc].id;//把棋子移动到下棋位置
             map[state.begr][state.begc].id = NONE;//最开始的位置为空
             map[state.endr][state.endc].type = map[state.begr][state.begc].type;//把棋子移动到下棋位置
